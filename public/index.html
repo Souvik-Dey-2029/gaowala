@@ -205,9 +205,9 @@
 
   <!-- REVIEWS -->
   <section id="reviews">
-    <div style="max-width: 1400px; margin: 0 auto; padding: 5rem 4rem;">
+    <div class="reviews-container">
       <div class="section-label reveal">Guest Experiences</div>
-      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 4rem;" class="reveal">
+      <div class="reviews-header reveal">
         <h2 class="section-heading">Real Words<br>From You</h2>
         <button class="btn-gold" style="cursor: pointer;" onclick="openReviewModal()"><span>Leave a Review</span></button>
       </div>
@@ -467,8 +467,8 @@
   <div class="chat-overlay" id="chat-overlay" onclick="toggleChat()"></div>
 
   <!-- REVIEW MODAL -->
-  <div id="review-modal" class="modal-overlay">
-    <div class="modal-content" style="max-width: 500px; padding: 2.5rem; background: var(--surface); border: 1px solid rgba(201, 168, 76, 0.2);">
+  <div id="review-modal" class="modal-overlay" onclick="if(event.target===this)closeReviewModal()">
+    <div class="modal-content review-modal-content">
       <button class="modal-close" onclick="closeReviewModal()">✕</button>
       <div style="text-align:center; margin-bottom: 2rem;">
         <h3 class="section-heading" style="font-size:2rem;">Leave a Review</h3>
