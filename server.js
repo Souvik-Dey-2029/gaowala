@@ -6,14 +6,15 @@ const fs = require('fs');
 const path = require('path');
 const { OpenAI } = require('openai');
 
-const openai = new OpenAI({
+const apiKey = process.env.OPENROUTER_API_KEY || process.env.API_KEY || '';
+const openai = apiKey ? new OpenAI({
   baseURL: 'https://openrouter.ai/api/v1',
-  apiKey: process.env.OPENROUTER_API_KEY,
+  apiKey: apiKey,
   defaultHeaders: {
     "HTTP-Referer": "http://localhost:3000",
     "X-Title": "Gaowala AI"
   }
-});
+}) : null;
 
 const app = express();
 const port = 3000;
@@ -283,6 +284,9 @@ Instructions:
 Tone: Friendly, helpful, fast, like a smart restaurant assistant.`;
 
   try {
+    if (!openai) {
+      throw new Error("OpenAI / OpenRouter API key not configured");
+    }
     const completion = await openai.chat.completions.create({
       model: "google/gemini-2.5-flash", 
       max_tokens: 500,

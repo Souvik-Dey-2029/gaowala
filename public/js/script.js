@@ -17,26 +17,54 @@ if (isMobile) {
   }, 80);
 }
 
-// ── CURSOR (desktop only) ──
+// ── CURSOR (desktop fine-pointer only) ──
 const cur = document.getElementById('cursor');
 const ring = document.getElementById('cursor-ring');
-if (isMobile) {
+const hasFinePointer = window.matchMedia('(pointer: fine)').matches;
+
+if (!hasFinePointer || isMobile || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
   if (cur) cur.style.display = 'none';
   if (ring) ring.style.display = 'none';
-  // Also restore default cursor on mobile
   document.body.style.cursor = 'auto';
 } else {
-  let mx = 0, my = 0, rx = 0, ry = 0;
-  window.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; cur.style.left = mx + 'px'; cur.style.top = my + 'px'; });
-  (function animCursor() {
-    rx += (mx - rx) * 0.1; ry += (my - ry) * 0.1;
-    ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
-    requestAnimationFrame(animCursor);
+  let mx = -100, my = -100, rx = -100, ry = -100;
+  let cursorScale = 1;
+  let ringScale = 1;
+  let isHovered = false;
+
+  window.addEventListener('mousemove', e => {
+    mx = e.clientX;
+    my = e.clientY;
+    if (rx === -100) { rx = mx; ry = my; }
+  }, { passive: true });
+
+  // Event delegation instead of hundreds of listeners
+  document.addEventListener('mouseover', e => {
+    if (e.target.closest('a, button, .menu-item, .spec-card, .menu-tab, input, select, textarea, [role="button"]')) {
+      cursorScale = 2.2;
+      ringScale = 1.4;
+      isHovered = true;
+    }
+  }, { passive: true });
+
+  document.addEventListener('mouseout', e => {
+    if (e.target.closest('a, button, .menu-item, .spec-card, .menu-tab, input, select, textarea, [role="button"]')) {
+      cursorScale = 1;
+      ringScale = 1;
+      isHovered = false;
+    }
+  }, { passive: true });
+
+  (function renderCursor() {
+    // Smooth lerp for ring, direct sync for point
+    if (mx >= 0) {
+      rx += (mx - rx) * 0.18;
+      ry += (my - ry) * 0.18;
+      cur.style.transform = `translate3d(${mx}px, ${my}px, 0) translate(-50%, -50%) scale(${cursorScale})`;
+      ring.style.transform = `translate3d(${rx}px, ${ry}px, 0) translate(-50%, -50%) scale(${ringScale})`;
+    }
+    requestAnimationFrame(renderCursor);
   })();
-  document.querySelectorAll('a,button,.menu-item,.spec-card').forEach(el => {
-    el.addEventListener('mouseenter', () => { cur.style.transform = 'translate(-50%,-50%) scale(2.5)'; ring.style.transform = 'translate(-50%,-50%) scale(1.5)'; });
-    el.addEventListener('mouseleave', () => { cur.style.transform = 'translate(-50%,-50%) scale(1)'; ring.style.transform = 'translate(-50%,-50%) scale(1)'; });
-  });
 }
 
 // ── NAV SCROLL & MOBILE MENU ──
@@ -361,13 +389,7 @@ document.addEventListener('click', (e) => {
   }
 });
 
-function initGlow() {
-  const goldGlow = document.createElement('div');
-  goldGlow.style.cssText = 'position:fixed;width:400px;height:400px;border-radius:50%;pointer-events:none;z-index:0;background:radial-gradient(circle,rgba(201,168,76,0.04),transparent);transform:translate(-50%,-50%);transition:left 0.8s,top 0.8s;';
-  document.body.appendChild(goldGlow);
-  window.addEventListener('mousemove', e => { goldGlow.style.left = e.clientX + 'px'; goldGlow.style.top = e.clientY + 'px'; });
-}
-initGlow();
+// Glow effect handled cleanly via CSS where appropriate without mousemove repaint
 
 // ── CART & CHECKOUT ──
 let cart = [];
